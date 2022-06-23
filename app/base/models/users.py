@@ -1,10 +1,43 @@
 # -*- encoding: utf-8 -*-
+from flask_jwt_extended import get_current_user
+from sqlalchemy import func
 from app import db,jwt
 
 from app.base.tools import hash_pass
 import secrets
 import datetime
 
+# it could track who revoked a JWT, when a token expires, notes for why a
+# JWT was revoked, an endpoint to un-revoked a JWT, etc.
+# Making jti an index can significantly speed up the search when there are
+# tens of thousands of records. Remember this query will happen for every
+# (protected) request,
+# If your database supports a UUID type, this can be used for the jti column
+# as well
+
+class TokenBlocklist(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    jti = db.Column(db.String(36), nullable=False, index=True)
+    type = db.Column(db.String(16), nullable=False)
+    user_id = db.Column(
+        db.ForeignKey('users.id'),
+        default=lambda: get_current_user().id,
+        nullable=False,
+    )
+    created_at = db.Column(
+        db.DateTime,
+        server_default=func.now(),
+        nullable=False,
+    )
+    
+# Callback function to check if a JWT exists in the database blocklist
+@jwt.token_in_blocklist_loader
+def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
+    jti = jwt_payload["jti"]
+    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
+    return token is not None
+
+# loaders for jwt
 @jwt.user_identity_loader
 def user_identity_lookup(user):
     return user.id
@@ -36,11 +69,15 @@ class User(db.Model, TimestampMixin):
     password_reset_expires = db.Column(db.DateTime)
     activation_token = db.Column(db.String(128))
 
-    is_admin = db.Column(db.Boolean, default=False)
+    account_type = db.Column(db.String(50))
 
     last_seen = db.Column(db.DateTime, server_default=db.func.now())
     is_active = db.Column(db.Boolean, default=False)
 
+    __mapper_args__ = {
+        'polymorphic_identity': 'user',
+        'polymorphic_on': account_type
+    }
     def __init__(self, **kwargs):
         for property, value in kwargs.items():
             # depending on whether value is an iterable or not, we must
@@ -76,24 +113,34 @@ class User(db.Model, TimestampMixin):
     def get_name(self):
         return f"{self.first_name} {self.last_name}"
 
+User.client = 'client'
+User.admin = 'admin'
+User.juriste = 'juriste'
 
-# it could track who revoked a JWT, when a token expires, notes for why a
-# JWT was revoked, an endpoint to un-revoked a JWT, etc.
-# Making jti an index can significantly speed up the search when there are
-# tens of thousands of records. Remember this query will happen for every
-# (protected) request,
-# If your database supports a UUID type, this can be used for the jti column
-# as well
+class Admin(User):
+    __tablename__ = 'admins'
 
-class TokenBlocklist(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    jti = db.Column(db.String(36), nullable=False, index=True)
-    created_at = db.Column(db.DateTime, nullable=False)
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': User.admin,
+    }
 
 
-# Callback function to check if a JWT exists in the database blocklist
-@jwt.token_in_blocklist_loader
-def check_if_token_revoked(jwt_header, jwt_payload: dict) -> bool:
-    jti = jwt_payload["jti"]
-    token = db.session.query(TokenBlocklist.id).filter_by(jti=jti).scalar()
-    return token is not None
+class Client(User):
+    __tablename__ = 'clients'
+
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': User.client,
+    }
+
+class Juriste(User):
+    __tablename__ = 'juristes'
+
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    __mapper_args__ = {
+        'polymorphic_identity': User.juriste,
+    }

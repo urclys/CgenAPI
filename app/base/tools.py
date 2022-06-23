@@ -12,7 +12,9 @@ from threading import Thread
 
 from flask import current_app as app, jsonify, make_response
 from flask import abort
+from flask_jwt_extended import create_access_token, create_refresh_token, set_access_cookies, set_refresh_cookies
 from flask_mail import Message
+import requests
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, mail
@@ -58,3 +60,14 @@ def send_email(subject, sender, recipients, text_body, html_body):
            args=(app._get_current_object(), msg)).start()
 
 
+############################ oAuth ###########################33
+
+def get_google_provider_cfg():
+    return requests.get(app.config['GOOGLE_DISCOVERY_URL']).json()
+
+def login_user_using_cookies(user,response):
+    access_token = create_access_token(identity=user,fresh=True)
+    refresh_token = create_refresh_token(identity=user)
+    set_access_cookies(response, access_token)
+    set_refresh_cookies(response, refresh_token)
+    return response

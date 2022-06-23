@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_mail import Mail
 from flask_cors import CORS
 from flask_wtf import CSRFProtect
+from oauthlib.oauth2 import WebApplicationClient
 
 
 from importlib import import_module
@@ -16,6 +17,8 @@ cors = CORS()
 db = SQLAlchemy()
 jwt = JWTManager()
 csrf = CSRFProtect()
+
+
 
 
 def register_extensions(app):
@@ -53,6 +56,9 @@ def configure_logs(app):
     except:
         pass
 
+# init oAuth 2
+def init_oauth(app):
+    return WebApplicationClient(app.config['GOOGLE_CLIENT_ID'])
 
 def create_app(config, selenium=False):
     app = Flask(__name__, static_folder='base/static')

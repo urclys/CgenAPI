@@ -17,6 +17,10 @@ class Config(object):
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=3)
     JWT_REFRESH_TOKEN_EXPIRES = timedelta(days=30)
 
+    GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID")
+    GOOGLE_CLIENT_SECRET = os.environ.get("GOOGLE_CLIENT_SECRET")
+    GOOGLE_DISCOVERY_URL = (
+        "https://accounts.google.com/.well-known/openid-configuration")
 
 
 class DevelopmentConfig(Config):
@@ -36,7 +40,6 @@ class DevelopmentConfig(Config):
     SSL_REDIRECT = False
 
     JWT_COOKIE_SECURE = False
-
 
 
 class ProductionConfig(Config):
