@@ -1,0 +1,23 @@
+# git and dlls
+.git
+.idea
+
+# python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+
+# tests and coverage
+*.pytest_cache
+.coverage
+
+# database & logs
+*.db
+*.log
+migrations/
+
+#  virtualenv folder
+.venv/
+.vscode/
