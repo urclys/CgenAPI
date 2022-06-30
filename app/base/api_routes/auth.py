@@ -51,7 +51,7 @@ def login():
 
 
 @blueprint.route("/api/auth/login/google")
-def login():
+def login_google():
     verify_jwt_in_request(optional=True)
     if get_jwt_identity():
         return success_response(200,'Already logged in, Please log out before trying again !')
@@ -176,3 +176,8 @@ def logout():
     # unset_access_cookies(resp)
     # unset_refresh_cookies(resp)
     return resp
+
+
+@blueprint.route('/hello', methods=['GET'])
+def hello():
+    return 'Hello world'

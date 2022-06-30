@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  db:
+    platform: linux/x86_64
+    image: mysql:8.0.27
+    container_name: flask-backend-db
+    environment:
+      MYSQL_DATABASE: flask_db
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3307:3306"
+    volumes:
+      - ./db/mysql/volumes:/var/lib/mysql
+  api:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    container_name: flask-backend
+    command: bash -c "flask run --host=0.0.0.0 --port=5000"
+    # entrypoint: ./docker-entrypoint.sh
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db

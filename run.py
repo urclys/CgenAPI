@@ -10,7 +10,7 @@ from config import config_dict
 from app import create_app, db
 
 get_config_mode = environ.get('CONFIG_MODE')
-
+print(get_config_mode)
 try:
     config_mode = config_dict[get_config_mode.capitalize()]
     print(config_mode)

@@ -1,0 +1,4 @@
+# database & logs
+*.db
+*.log
+migrations/

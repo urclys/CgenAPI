@@ -41,6 +41,24 @@ class DevelopmentConfig(Config):
 
     JWT_COOKIE_SECURE = False
 
+class DockerConfig(Config):
+    DEBUG = True
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DOCKER_DATABASE_URI')
+    SQLALCHEMY_ECHO = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    MAIL_SERVER = os.environ.get('MAIL_SERVER')
+    MAIL_PORT = int(os.environ.get('MAIL_PORT', '587'))
+    MAIL_USERNAME = os.environ.get('MAIL_USERNAME')
+    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD')
+    # MAIL_USE_TLS = os.environ.get('MAIL_USE_TLS', 'true').lower() in ['true', 'on', '1']
+    MAIL_DEFAULT_SENDER = os.environ.get('MAIL_DEFAULT_SENDER')
+    MAIL_USE_SSL = False
+    MAIL_USE_TLS = True
+    SSL_REDIRECT = False
+
+    JWT_COOKIE_SECURE = False
+
 
 class ProductionConfig(Config):
     DEBUG = False
@@ -67,6 +85,7 @@ class DebugConfig(Config):
 
 config_dict = {
     'Production': ProductionConfig,
+    'Docker': DockerConfig,
     'Development': DevelopmentConfig,
     'Debug': DebugConfig
 }
