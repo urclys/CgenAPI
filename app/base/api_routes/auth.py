@@ -173,8 +173,8 @@ def logout():
         TokenBlocklist(jti=jti, type=ttype, created_at=now))
     resp = success_response(
         200, f"{ttype.capitalize()} token successfully revoked")
-    # unset_access_cookies(resp)
-    # unset_refresh_cookies(resp)
+    unset_access_cookies(resp)
+    unset_refresh_cookies(resp)
     return resp
 
 

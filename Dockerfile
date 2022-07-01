@@ -12,14 +12,12 @@ RUN pip install Werkzeug==2.0.0
 RUN pip install jinja2==3.0
 
 # switch working directory
-WORKDIR /app
+
 
 # COPY ./docker-entrypoint.sh /docker-entrypoint.sh
 # RUN chmod +x /docker-entrypoint.sh
 # ENTRYPOINT ["/docker-entrypoint.sh"]
-
-# copy every content from the local file to the image
-COPY . /app
+# RUN ls
 
 # configure the container to run in an executed manner
 EXPOSE 5000
@@ -27,8 +25,12 @@ ENV FLASK_APP run.py
 ENV FLASK_ENV development
 ENV CONFIG_MODE Docker
 
-RUN flask db init
-RUN flask db migrate
-RUN flask db upgrade
+# copy every content from the local file to the image
+COPY . ./
+
+# Docker init
+RUN ["chmod", "+x", "docker-entrypoint.sh"]
+RUN ["chmod", "+x", "init-sql.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]
 
 

@@ -3,9 +3,11 @@ from flask_jwt_extended import get_current_user
 from sqlalchemy import func
 from app import db,jwt
 
-from app.base.tools import hash_pass
 import secrets
 import datetime
+
+from app.base.tools import hash_pass
+from app.base.models.mixins import ActivableMixin, TimestampMixin
 
 # it could track who revoked a JWT, when a token expires, notes for why a
 # JWT was revoked, an endpoint to un-revoked a JWT, etc.
@@ -47,17 +49,10 @@ def user_lookup_callback(_jwt_header, jwt_data):
     identity = jwt_data["sub"]
     return User.query.filter_by(id=identity).one_or_none()
 
-############## MIXINS ##############################################
-
-class TimestampMixin(object):
-    created_at = db.Column(db.DateTime, server_default=db.func.now())
-    updated_at = db.Column(
-        db.DateTime, server_default=db.func.now(), server_onupdate=db.func.now())
-
 ############## Models ##############################################
 
 
-class User(db.Model, TimestampMixin):
+class User(db.Model, TimestampMixin, ActivableMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -72,7 +67,7 @@ class User(db.Model, TimestampMixin):
     account_type = db.Column(db.String(50))
 
     last_seen = db.Column(db.DateTime, server_default=db.func.now())
-    is_active = db.Column(db.Boolean, default=False)
+    # is_active = db.Column(db.Boolean, default=False)
 
     __mapper_args__ = {
         'polymorphic_identity': 'user',

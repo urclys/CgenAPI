@@ -40,7 +40,7 @@ class DevelopmentConfig(Config):
     SSL_REDIRECT = False
 
     JWT_COOKIE_SECURE = False
-
+    OAUTHLIB_INSECURE_TRANSPORT=True
 class DockerConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.environ.get('DOCKER_DATABASE_URI')
@@ -58,6 +58,7 @@ class DockerConfig(Config):
     SSL_REDIRECT = False
 
     JWT_COOKIE_SECURE = False
+    OAUTHLIB_INSECURE_TRANSPORT=True
 
 
 class ProductionConfig(Config):
